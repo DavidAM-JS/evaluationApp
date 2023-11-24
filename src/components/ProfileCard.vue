@@ -1,60 +1,75 @@
 <template>
-    <v-card class="github-profile-card mx-auto my-12 px-5 py-5" :loading="loading" max-width="600" outlined elevation="5">
-        <v-card-title>Evaluation App</v-card-title>
-        <v-card-text>Use this app to search for any github profile information.</v-card-text>
-        <div class="input container">
-            <app-input v-model="username" label="User name" placeholder="Type a github username" @keydown:enter="searchUser">
-                <div slot="inputIcon">
-                    <button @click="searchUser">
-                        <search-svg />
-                    </button>
-                </div>
-            </app-input>
+    <v-card class="profile-card mx-auto my-12 px-5 py-5" :class="{ 'dark-theme': isDarkTheme }" :loading="loading" max-width="700" outlined elevation="5">
+        <div class="card-header">
+            <v-card-title class="text-h4 justify-space-between">
+                Evaluation App
+                <v-switch label="Dark Theme" :value="isDarkTheme" @change="toogleTheme($event)" />
+            </v-card-title>
+            <v-card-text>Use this app to search for any github profile information.</v-card-text>
+            <div class="input container">
+                <app-input v-model="username" label="User name" placeholder="Type a github username" @keydown:enter="searchUser">
+                    <div slot="inputIcon">
+                        <button @click="searchUser">
+                            <search-svg />
+                        </button>
+                    </div>
+                </app-input>
+            </div>
         </div>
+        <v-divider></v-divider>
         <div class="profile-container">
             <v-expand-transition>
                 <div v-if="profileInfo && !error">
-                    <v-divider></v-divider>
                     <div class="profile-content">
-                        <div class="profile-name">
-                            <div>{{ profileInfo.loginName }}</div>
+                        <div class="profile-header">
+                            <div class="profile-img">
+                                <img :src="profileInfo.profileImageUrl" />
+                            </div>
+                            <div class="profile-name">
+                                <div>{{ profileInfo.loginName }}</div>
+                            </div>
                         </div>
-                        <div class="profile-img">
-                            <img :src="profileInfo.profileImageUrl" />
+                        <div class="profile-general-info">
+                            <div v-if="profileInfo.name" class="field name">
+                                <user-name-svg />
+                                <span>{{ profileInfo.name }}</span>
+                            </div>
+                            <div v-if="profileInfo.location" class="field name">
+                                <user-location-svg />
+                                <span>{{ profileInfo.location }}</span>
+                            </div>
+                            <div v-if="profileInfo.email" class="field email">
+                                <user-email-svg />
+                                <span>{{ profileInfo.email }}</span>
+                            </div>
+                            <div v-if="profileInfo.company" class="field">
+                                <user-company-svg />
+                                <span>{{ profileInfo.company }}</span>
+                            </div>
+                            <div v-if="profileInfo.profileUrl" class="field">
+                                <user-profile-svg />
+                                <a :href="profileInfo.profileUrl" target="_blank">{{ profileInfo.loginName }}</a>
+                            </div>
                         </div>
-                        <div class="field">
-                            <label>Name:</label>
-                            <span>{{ profileInfo.name }}</span>
-                        </div>
-                        <div class="field email">
-                            <label>Email:</label>
-                            <span>{{ `${profileInfo.email ? profileInfo.email : "No email"}` }}</span>
-                        </div>
-                        <div class="field">
-                            <label>Company:</label>
-                            <span>{{ `${profileInfo.company ? profileInfo.company : "No Company"}` }}</span>
-                        </div>
-                        <div class="field">
-                            <label>Profile Url:</label>
-                            <a :href="profileInfo.profileUrl" target="_blank">{{ profileInfo.profileUrl }}</a>
-                        </div>
-                        <div class="field">
-                            <label>No. Repositories:</label>
-                            <span>{{ profileInfo.numOfRepos }}</span>
-                        </div>
-                        <div class="field">
-                            <label>Followers:</label>
-                            <span>{{ profileInfo.followers }}</span>
-                        </div>
-                        <div class="field">
-                            <label>Following:</label>
-                            <span>{{ profileInfo.following }}</span>
+                        <div class="profile-analytics">
+                            <div class="field">
+                                <div class="analytic">{{ profileInfo.numOfRepos }}</div>
+                                <label>Repositories</label>
+                            </div>
+                            <div class="field">
+                                <div class="analytic">{{ profileInfo.followers }}</div>
+                                <label>Followers</label>
+                            </div>
+                            <div class="field">
+                                <div class="analytic">{{ profileInfo.following }}</div>
+                                <label>Following</label>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div v-else>
                     <div class="no-records">
-                        <profile-card-no-records :has-title="hasEmptyStateTitle" />
+                        <profile-card-no-records :dark-theme="isDarkTheme" :has-title="hasEmptyStateTitle" />
                     </div>
                 </div>
             </v-expand-transition>
@@ -66,12 +81,29 @@ import { GithubService } from "../scripts/services/github-service";
 import AppInput from "./AppInput.vue";
 import ProfileCardNoRecords from "./ProfileCardNoRecords";
 import SearchSvg from "./svg/search-svg.vue";
+import UserNameSvg from "./svg/user-name-svg.vue";
+import UserProfileSvg from "./svg/user-profile-svg.vue";
+import UserEmailSvg from "./svg/user-email-svg.vue";
+import UserCompanySvg from "./svg/user-company-svg.vue";
+import UserLocationSvg from "./svg/user-location-svg.vue";
 
 export default {
     components: {
         "app-input": AppInput,
         "search-svg": SearchSvg,
         "profile-card-no-records": ProfileCardNoRecords,
+        "user-name-svg": UserNameSvg,
+        "user-profile-svg": UserProfileSvg,
+        "user-email-svg": UserEmailSvg,
+        "user-company-svg": UserCompanySvg,
+        "user-location-svg": UserLocationSvg,
+    },
+
+    props: {
+        darkTheme: {
+            type: Boolean,
+            default: true,
+        },
     },
 
     data() {
@@ -86,6 +118,10 @@ export default {
     computed: {
         hasEmptyStateTitle() {
             return !this.profileInfo || !!(this.error && this.username);
+        },
+
+        isDarkTheme() {
+            return this.darkTheme;
         },
     },
 
@@ -104,6 +140,7 @@ export default {
                         profileUrl: data.html_url,
                         email: data.email,
                         company: data.company,
+                        location: data.location,
                         numOfRepos: data.public_repos,
                         followers: data.followers,
                         following: data.following,
@@ -116,57 +153,106 @@ export default {
                     this.loading = false;
                 });
         },
+
+        toogleTheme(value) {
+            this.$emit("toogle-theme", !!value);
+        },
     },
 };
 </script>
 <style>
-.github-profile-card .input-container {
+.profile-card {
+    font-family: Gotham Rounded, sans-serif;
+}
+
+.profile-card .input-container {
     margin-bottom: 24px;
 }
 
-.github-profile-card .app-input {
+.profile-card .app-input {
     max-width: 300px;
     padding: 0 16px;
-}
-
-.github-profile-card .app-input label {
     font-size: 14px;
 }
 
-.github-profile-card .profile-content {
+.profile-card .profile-content {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 16px;
-    align-items: center;
+    width: 100%;
+    padding: 24px 16px;
+    text-align: center;
 }
 
-.github-profile-card .profile-name {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.github-profile-card .field {
+.profile-card .profile-general-info {
     display: flex;
-    gap: 5px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 8px;
 }
 
-.github-profile-card .field label {
-    font-weight: bold;
+.profile-card .profile-analytics {
+    display: flex;
+    justify-content: space-around;
 }
 
-.github-profile-card .profile-img {
-    margin: auto;
-    width: 150px;
-}
-
-.github-profile-card .profile-img img {
-    border-radius: 20px;
+.profile-card .profile-general-info .field {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    gap: 8px;
     width: 100%;
 }
 
-.github-profile-card .no-records-svg {
+.profile-card .profile-analytics .analytic {
+    font-size: 40px;
+    font-weight: 900;
+}
+
+.profile-card .profile-name {
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.profile-card .profile-img {
+    margin: auto;
+    max-width: 150px;
+}
+
+.profile-card .profile-img img {
+    border-radius: 50%;
+    width: 100%;
+}
+
+.profile-card .no-records-svg {
     width: 100px;
     opacity: 0.5;
+}
+
+.profile-card .profile-general-info svg {
+    width: 20px;
+    height: 20px;
+}
+
+.profile-card .profile-general-info svg path {
+    fill: #877d88;
+}
+
+.profile-card .profile-general-info a {
+    text-decoration: none;
+}
+
+/** DARK THEME*/
+
+.profile-card.dark-theme {
+    color: white;
+    background-color: rgb(10, 52, 202);
+    box-shadow: 0 0 30px rgb(16, 42, 202);
+}
+
+.profile-card.dark-theme .v-input .v-label {
+    color: white;
 }
 </style>

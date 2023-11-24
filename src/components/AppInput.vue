@@ -118,12 +118,10 @@ export default {
 
 .app-input input {
     background: #fafafa;
-    font: normal 16px/1em "Roboto";
     width: 100%;
     border: 1px solid #cac6cb;
     padding: 8px 16px;
     border-radius: 20px;
-    color: #382153;
     outline: none;
 }
 
@@ -145,9 +143,7 @@ export default {
 
 .app-input label {
     display: block;
-    font: 500 16px/1em "Roboto";
     margin-bottom: 7px;
-    color: #382153;
 }
 
 .app-input .icon-container {

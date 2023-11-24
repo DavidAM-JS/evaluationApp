@@ -1,19 +1,19 @@
 <template>
     <v-app>
         <v-main>
-            <profle-card />
+            <github-app-view />
         </v-main>
     </v-app>
 </template>
 
 <script>
-import ProfileCard from "./components/ProfileCard.vue";
+import GithubAppView from "./views/GithubAppView.vue";
 
 export default {
     name: "App",
 
     components: {
-        "profle-card": ProfileCard,
+        "github-app-view": GithubAppView,
     },
 
     data: () => ({

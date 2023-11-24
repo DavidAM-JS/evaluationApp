@@ -1,5 +1,5 @@
 <template>
-    <div class="profile-no-records">
+    <div class="profile-no-records" :class="{ 'dark-theme': darkTheme }">
         <img class="no-records-svg" :src="require(`@/assets/images/no-records.png`)" />
         <h1 v-if="hasTitle">{{ title }}</h1>
         <div class="content">{{ content }}</div>
@@ -29,6 +29,11 @@ export default {
         imgFilename: {
             type: String,
             default: "no-records.svg",
+        },
+
+        darkTheme: {
+            type: Boolean,
+            default: false,
         },
     },
 };
@@ -104,5 +109,9 @@ export default {
     fill: #382153;
     margin-left: 10px;
     max-height: 15px;
+}
+
+.profile-no-records.dark-theme {
+    background-color: rgb(10, 52, 202);
 }
 </style>
